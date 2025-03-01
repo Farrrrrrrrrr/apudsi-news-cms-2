@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - DigitalOcean Database Tester</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.Title}}</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/articles">Articles</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="card">
+                {{if .Error}}
+                <div class="result-box error">{{.Error}}</div>
+                {{end}}
+                
+                <form action="{{.FormURL}}" method="post" class="article-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="title">Title:</label>
+                        <input type="text" id="title" name="title" value="{{.Article.Title}}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="author">Author:</label>
+                        <input type="text" id="author" name="author" value="{{.Article.Author}}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image_url">Image URL:</label>
+                        <input type="url" id="image_url" name="image_url" value="{{.Article.ImageURL}}">
+                        <small>Optional: URL to an image for this article</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image">Upload Image:</label>
+                        <input type="file" id="image" name="image" accept="image/*">
+                        <small>Optional: Upload an image from your device (max 10MB)</small>
+                    </div>
+
+                    {{if .Article.HasImage}}
+                    <div class="form-group image-preview">
+                        <label>Current Image:</label>
+                        {{if .Article.ImageURL}}
+                            <img src="{{.Article.ImageURL}}" alt="Article image" class="thumbnail">
+                        {{else if .Article.ImageType}}
+                            <img src="/image?id={{.Article.ID}}" alt="Article image" class="thumbnail">
+                        {{end}}
+                    </div>
+                    {{end}}
+                    
+                    <div class="form-group">
+                        <label for="description">Content:</label>
+                        <textarea id="description" name="description" rows="10" required>{{.Article.Description}}</textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{{if .Article.ID}}/article?id={{.Article.ID}}{{else}}/articles{{end}}" class="btn secondary">Cancel</a>
+                        <button type="submit" class="btn primary">Save Article</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Preview uploaded image before submitting
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Remove any existing preview
+                const existingPreview = document.querySelector('.image-preview');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+
+                // Create new preview
+                const previewDiv = document.createElement('div');
+                previewDiv.classList.add('form-group', 'image-preview');
+                
+                const label = document.createElement('label');
+                label.textContent = 'Image Preview:';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = 'Preview';
+                img.classList.add('thumbnail');
+                
+                previewDiv.appendChild(label);
+                previewDiv.appendChild(img);
+                
+                // Insert after file input
+                const fileInput = document.getElementById('image');
+                fileInput.parentNode.after(previewDiv);
+            }
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>

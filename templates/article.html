@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{if .Article}}
+    <title>{{.Article.Title}} - DigitalOcean Database Tester</title>
+    {{else}}
+    <title>Article - DigitalOcean Database Tester</title>
+    {{end}}
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>News Article</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/articles">Articles</a>
+            </nav>
+        </header>
+
+        <main>
+            {{if .Error}}
+            <section class="card">
+                <div class="result-box error">{{.Error}}</div>
+                <a href="/articles" class="btn secondary">Back to Articles</a>
+            </section>
+            {{else if .Article}}
+            <section class="article-detail">
+                <div class="article-header">
+                    <h2>{{.Article.Title}}</h2>
+                    <p class="article-meta">By {{.Article.Author}} • {{.Article.CreatedAt.Format "Jan 02, 2006 15:04"}}</p>
+                </div>
+                
+                {{if .Article.ImageURL}}
+                <div class="article-image-full">
+                    <img src="{{.Article.ImageURL}}" alt="{{.Article.Title}}">
+                </div>
+                {{else if .Article.ImageType}}
+                <div class="article-image-full">
+                    <img src="/image?id={{.Article.ID}}" alt="{{.Article.Title}}">
+                </div>
+                {{end}}
+                
+                <div class="article-content-full">
+                    <p>{{.Article.Description}}</p>
+                </div>
+                
+                <div class="article-actions">
+                    <a href="/articles" class="btn secondary">Back to Articles</a>
+                    <a href="/article/edit?id={{.Article.ID}}" class="btn secondary">Edit Article</a>
+                    <button onclick="deleteArticle({{.Article.ID}})" class="btn danger">Delete Article</button>
+                </div>
+            </section>
+            {{else}}
+            <section class="card">
+                <div class="result-box error">Article not found</div>
+                <a href="/articles" class="btn secondary">Back to Articles</a>
+            </section>
+            {{end}}
+        </main>
+    </div>
+    
+    <script>
+        function deleteArticle(id) {
+            if (confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
+                const formData = new FormData();
+                formData.append('id', id);
+                
+                fetch('/article/delete', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect to articles list
+                        window.location.href = '/articles';
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to delete article'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

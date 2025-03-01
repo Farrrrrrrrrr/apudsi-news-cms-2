@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalOcean Database Tester</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DigitalOcean Database Connection Tester</h1>
+            <nav>
+                <a href="/" class="active">Home</a>
+                <a href="/articles">Articles</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="card">
+                <h2>Test Connection</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="env-tab">Use Environment Variables</button>
+                    <button class="tab-btn" data-tab="custom-tab">Custom Connection</button>
+                </div>
+
+                <div id="env-tab" class="tab-content active">
+                    <p>This will use the connection details from your environment variables.</p>
+                    <button id="test-env-conn" class="btn primary">Test Connection</button>
+                </div>
+
+                <div id="custom-tab" class="tab-content">
+                    <form id="connection-form">
+                        <div class="form-group">
+                            <label for="host">Host:</label>
+                            <input type="text" id="host" name="host" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="port">Port:</label>
+                            <input type="text" id="port" name="port" value="3306">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dbname">Database Name:</label>
+                            <input type="text" id="dbname" name="dbname">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sslmode">SSL Mode:</label>
+                            <select id="sslmode" name="sslmode">
+                                <option value="false">Disabled</option>
+                                <option value="true">Enabled</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn primary">Test Connection</button>
+                    </form>
+                </div>
+
+                <div id="result" class="result-box" style="display: none;"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(button.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Test connection using environment variables
+        document.getElementById('test-env-conn').addEventListener('click', async () => {
+            const resultBox = document.getElementById('result');
+            resultBox.innerHTML = 'Testing connection...';
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box info';
+
+            try {
+                const response = await fetch('/test-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'use_env=true'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    resultBox.className = 'result-box success';
+                    resultBox.textContent = result.message;
+                } else {
+                    resultBox.className = 'result-box error';
+                    resultBox.textContent = result.error;
+                }
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultBox.textContent = 'Error: ' + error.message;
+            }
+        });
+
+        // Test connection using custom parameters
+        document.getElementById('connection-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultBox = document.getElementById('result');
+            resultBox.innerHTML = 'Testing connection...';
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box info';
+            
+            const formData = new FormData(e.target);
+            const formParams = new URLSearchParams(formData);
+
+            try {
+                const response = await fetch('/test-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formParams
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    resultBox.className = 'result-box success';
+                    resultBox.textContent = result.message;
+                } else {
+                    resultBox.className = 'result-box error';
+                    resultBox.textContent = result.error;
+                }
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultBox.textContent = 'Error: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
