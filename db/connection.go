@@ -15,27 +15,29 @@ import (
 
 // DBConnection represents a database connection
 type DBConnection struct {
-	Host       string
-	Port       string
-	Username   string
-	Password   string
-	DBName     string
-	SSLMode    string
-	CACertPath string
-	SkipVerify bool
+	Host          string
+	Port          string
+	Username      string
+	Password      string
+	DBName        string
+	SSLMode       string
+	CACertPath    string
+	CACertContent string // Add this new field
+	SkipVerify    bool
 }
 
 // NewConnectionFromEnv creates a new DBConnection from environment variables
 func NewConnectionFromEnv() *DBConnection {
 	return &DBConnection{
-		Host:       os.Getenv("DB_HOST"),
-		Port:       os.Getenv("DB_PORT"),
-		Username:   os.Getenv("DB_USERNAME"),
-		Password:   os.Getenv("DB_PASSWORD"),
-		DBName:     os.Getenv("DB_NAME"),
-		SSLMode:    os.Getenv("DB_SSL_MODE"),
-		CACertPath: os.Getenv("DB_CA_CERT_PATH"),
-		SkipVerify: os.Getenv("DB_SKIP_VERIFY") == "true",
+		Host:          os.Getenv("DB_HOST"),
+		Port:          os.Getenv("DB_PORT"),
+		Username:      os.Getenv("DB_USERNAME"),
+		Password:      os.Getenv("DB_PASSWORD"),
+		DBName:        os.Getenv("DB_NAME"),
+		SSLMode:       os.Getenv("DB_SSL_MODE"),
+		CACertPath:    os.Getenv("DB_CA_CERT_PATH"),
+		CACertContent: os.Getenv("DB_CA_CERT"), // Read cert content from env var
+		SkipVerify:    os.Getenv("DB_SKIP_VERIFY") == "true",
 	}
 }
 
