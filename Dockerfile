@@ -1,23 +1,29 @@
-# Use Node.js LTS version as the base image
-FROM node:20-alpine
+# Use the official Golang image
+FROM golang:1.21-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json files
-COPY package*.json ./
+# Copy go.mod and go.sum
+COPY go.mod go.sum* ./
 
-# Install dependencies
-RUN npm install
+# Download dependencies
+RUN go mod download
 
-# Copy CA certificate if it exists
+# Copy the .env file
+COPY .env ./
+
+# Copy CA certificate for database connection
 COPY ca-cert.pem ./ca-cert.pem
 
-# Copy source code
+# Copy the rest of the source code
 COPY . .
 
-# Expose the port defined in .env
+# Build the application
+RUN go build -o news-cms .
+
+# Expose the port defined in .env (8080)
 EXPOSE 8080
 
-# Start the application
-CMD ["npm", "start"]
+# Run the binary
+CMD ["./news-cms"]
